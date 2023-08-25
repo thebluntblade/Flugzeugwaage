@@ -16,7 +16,7 @@ const int HX711_dout_3 = 8; //mcu > HX711 no 3 dout pin
 const int HX711_sck_3 = 9; //mcu > HX711 no 3 sck pin
 #define Button1 1
 
-//HX711 constructor (dout pin, sck pin)
+// HX711 constructor (dout pin, sck pin)
 HX711_ADC LoadCell_1(HX711_dout_1, HX711_sck_1); //HX711 1
 HX711_ADC LoadCell_2(HX711_dout_2, HX711_sck_2); //HX711 2
 HX711_ADC LoadCell_3(HX711_dout_3, HX711_sck_3); //HX711 3
@@ -24,28 +24,35 @@ HX711_ADC LoadCell_3(HX711_dout_3, HX711_sck_3); //HX711 3
 long lastUpdateMillis = 0;
 boolean isButtonPressed = false;
 
-//Interrupts definieren
+// Interrupts definieren
 IRAM_ATTR void Taster() {
     isButtonPressed=true;
     // Serial.println("Hallo");
 }
+
+// Preferences-Instanz erstellen
+Preferences preferences;
 
 void setup() {
     Serial.begin(115200); delay(10);
     Serial.println();
     Serial.println("Starting...");
 
-    //Interrups registrieren
+    // Interrups registrieren
     attachInterrupt(digitalPinToInterrupt(Button1), Taster, HIGH); // hier muss man ggf. mit den Varainten HIGH, LOW CHANGE, FALLING und RISING probieren
 
-    float calibrationValue_1; // calibration value load cell 1
-    float calibrationValue_2; // calibration value load cell 2
-    float calibrationValue_3; // calibration value load cell 3
+    // Speicher öffnen
+    preferences.begin("Speicher", false);
+    float calibrationValue_1 = preferences.getFloat("calibrationValue_1", 1000); // calibration value load cell 1
+    float calibrationValue_2 = preferences.getFloat("calibrationValue_2", 1000); // calibration value load cell 2
+    float calibrationValue_3 = preferences.getFloat("calibrationValue_3", 1000); // calibration value load cell 3
+    preferences.end();
 
-    //zu Testzwecken feste Kalibierwerte nutzen
-    calibrationValue_1 = 696.0; // uncomment this if you want to set this value in the sketch
-    calibrationValue_2 = 733.0; // uncomment this if you want to set this value in the sketch
-    calibrationValue_3 = 733.0; // uncomment this if you want to set this value in the sketch
+
+    // zu Testzwecken feste Kalibierwerte nutzen
+    // float calibrationValue_1 = 696.0; // uncomment this if you want to set this value in the sketch
+    // float calibrationValue_2 = 733.0; // uncomment this if you want to set this value in the sketch
+    // float calibrationValue_3 = 733.0; // uncomment this if you want to set this value in the sketch
 
     LoadCell_1.begin();
     LoadCell_2.begin();
@@ -138,6 +145,7 @@ void calibrate() {
     float newCalibrationValue_1;
     float newCalibrationValue_2;
     float newCalibrationValue_3;
+    preferences.begin("Speicher", false); // Speicher öffnen
 
     u_int8_t count = 3; // Hier sollte noch eine Funktion eingebaut werden, die prüft, wie viele Wägezellen tatsächlich angeschlossen sind.
     for (size_t i = 1; i <= count; i++) {
@@ -154,18 +162,21 @@ void calibrate() {
                             newCalibrationValue_1 = LoadCell_1.getNewCalibration(known_mass); //get the new calibration value
                             Serial.print("New calibration value has been set to: ");
                             Serial.print(newCalibrationValue_1);
+                            // preferences.putFloat("calibrationValue_1", newCalibrationValue_1)
                             break;
                         case 2:
                             LoadCell_2.refreshDataSet(); //refresh the dataset to be sure that the known mass is measured correct
                             newCalibrationValue_2 = LoadCell_2.getNewCalibration(known_mass); //get the new calibration value
                             Serial.print("New calibration value has been set to: ");
                             Serial.print(newCalibrationValue_2);
+                            // preferences.putFloat("calibrationValue_2", newCalibrationValue_2)
                             break;                       
                         case 3:
                             LoadCell_3.refreshDataSet(); //refresh the dataset to be sure that the known mass is measured correct
                             newCalibrationValue_3 = LoadCell_3.getNewCalibration(known_mass); //get the new calibration value
                             Serial.print("New calibration value has been set to: ");
                             Serial.print(newCalibrationValue_3);
+                            // preferences.putFloat("calibrationValue_3", newCalibrationValue_3)
                             break; 
                         default:
                             break;
@@ -175,10 +186,6 @@ void calibrate() {
         }
         
     }
-    
-
-
-
-  Serial.println("End calibration");
-
+    preferences.end(); // Speicher schließen
+    Serial.println("End calibration");
 }
