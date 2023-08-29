@@ -54,7 +54,7 @@ HX711_ADC LoadCell_3(HX711_dout_3, HX711_sck_3); //HX711 3
 unsigned long lastUpdateMillis_1 = 0; // Software Debounce for buttons
 unsigned long lastUpdateMillis_2 = 0; // Delay for the load cells
 boolean isButtonPressed = false;
-boolean availableLoadCell_1 = true; // check if these load cells are plugged in
+boolean availableLoadCell_1 = true; // check if the loadcells are plugged in
 boolean availableLoadCell_2 = false;
 boolean availableLoadCell_3 = false;
 float resultLoadCell_1;
@@ -89,7 +89,7 @@ void calibrate() {
     do {
         u8g2.setFont(u8g2_font_ncenB10_tr);
         u8g2.setCursor(0, 14);
-        u8g2.print("Gewicht auf WZ1"); // "Put the weight on the loadcell"
+        u8g2.print("Gewicht auf WZ1"); // "Put the weight on the load cell"
         u8g2.setCursor(0, 32);
         u8g2.print("legen und Knopf "); 
         u8g2.setCursor(0, 50);
@@ -130,7 +130,7 @@ void calibrate() {
     do {
         u8g2.setFont(u8g2_font_ncenB10_tr);
         u8g2.setCursor(0, 14);
-        u8g2.print("Waegezelle 1"); // "Loadcell 1 is calibrated"
+        u8g2.print("Waegezelle 1"); // "Load cell 1 is calibrated"
         u8g2.setCursor(0, 32);
         u8g2.print("ist kalibriert");
         u8g2.setCursor(0, 50);
@@ -162,7 +162,7 @@ void calibrate() {
     do {
         u8g2.setFont(u8g2_font_ncenB10_tr);
         u8g2.setCursor(0, 14);
-        u8g2.print("Waegezelle 2"); // "Loadcell 2 is calibrated"
+        u8g2.print("Waegezelle 2"); // "Load cell 2 is calibrated"
         u8g2.setCursor(0, 32);
         u8g2.print("ist kalibriert");
         u8g2.setCursor(0, 50);
@@ -194,7 +194,7 @@ void calibrate() {
     do {
         u8g2.setFont(u8g2_font_ncenB10_tr);
         u8g2.setCursor(0, 14);
-        u8g2.print("Waegezelle 3"); // "Loadcell 3 is calibrated"
+        u8g2.print("Waegezelle 3"); // "Load cell 3 is calibrated"
         u8g2.setCursor(0, 32);
         u8g2.print("ist kalibriert"); 
     } 
@@ -265,17 +265,17 @@ void setup() {
     do {
         u8g2.setFont(u8g2_font_ncenB12_tr);
         u8g2.setCursor(0, 14);
-        u8g2.print("Waegezelle 1:"); // "Loadcell 1"
+        u8g2.print("Waegezelle 1:");
         u8g2.setCursor(0, 32);
-        u8g2.print("Waegezelle 2:"); // "Loadcell 2"
+        u8g2.print("Waegezelle 2:"); 
         u8g2.setCursor(0, 50);
-        u8g2.print("Waegezelle 3:"); // "Loadcell 3"
+        u8g2.print("Waegezelle 3:");
         u8g2.setCursor(120, 14);
-        u8g2.print(availableLoadCell_1); // "Loadcell 1"
+        u8g2.print(availableLoadCell_1);
         u8g2.setCursor(120, 32);
-        u8g2.print(availableLoadCell_2); // "Loadcell 2"
+        u8g2.print(availableLoadCell_2);
         u8g2.setCursor(120, 50);
-        u8g2.print(availableLoadCell_3); // "Loadcell 3"
+        u8g2.print(availableLoadCell_3);
     } while ( u8g2.nextPage() );
     
     // Load calibration values
@@ -332,18 +332,18 @@ void setup() {
         //LoadCell_3.setReverseOutput();
     }
 
-    delay(1000); // Enough time for the last Display, which shows the connected loadcells
+    delay(1000); // Enough time for the last Display, which shows the connected load cells
     Serial.println("Startup is complete");
     Serial.println("Press interrupt_1 for calibration");
     u8g2.firstPage();
     do {
         u8g2.setFont(u8g2_font_ncenB10_tr);
         u8g2.setCursor(0, 14);
-        u8g2.print("Zum Kalibrieren"); // "Loadcell 1"
+        u8g2.print("Zum Kalibrieren");
         u8g2.setCursor(0, 32);
-        u8g2.print("Knopf  innerhalb "); // "Loadcell 2"
+        u8g2.print("Knopf  innerhalb ");
         u8g2.setCursor(0, 50);
-        u8g2.print("von 3s druecken"); // "Loadcell 3"
+        u8g2.print("von 3s druecken");
     } while ( u8g2.nextPage() );
     delay(3000);
     
