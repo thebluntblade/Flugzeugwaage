@@ -15,7 +15,11 @@
     const int HX711_sck_2 = 23; //mcu > HX711 no 2 sck pin
     const int HX711_dout_3 = 19; //mcu > HX711 no 3 dout pin
     const int HX711_sck_3 = 22; //mcu > HX711 no 3 sck pin
-    #define Button1 4
+    #define Button1 4  
+    // bei den folgenden Punkten bin ich mir nicht sicher.
+    #define DisplayData 4 
+    #define DisplayClk 3
+    #define Button_1 7
 #endif
 #if defined(ESP8266)
     #define HX711_dout_1 D0 //mcu > HX711 no 1 dout pin
@@ -120,7 +124,7 @@ void calibrate() {
                 Serial.print("calibration value 1: ");
                 Serial.print(newCalibrationValue_1);
                 #if defined(ESP32) 
-                preferences.putFloat("calVal_1", newCalibrationValue_1)
+                preferences.putFloat("calVal_1", newCalibrationValue_1);
                 #endif
                 _resume = true;
             }
@@ -152,7 +156,7 @@ void calibrate() {
                 Serial.print("calibration value 2: ");
                 Serial.print(newCalibrationValue_2);
                 #if defined(ESP32) 
-                preferences.putFloat("calVal_2", newCalibrationValue_2)
+                preferences.putFloat("calVal_2", newCalibrationValue_2);
                 #endif
                 _resume = true;
             }            
@@ -184,7 +188,7 @@ void calibrate() {
                 Serial.print("calibration value: ");
                 Serial.print(newCalibrationValue_3);
                 #if defined(ESP32) 
-                preferences.putFloat("calVal_3", newCalibrationValue_3)
+                preferences.putFloat("calVal_3", newCalibrationValue_3);
                 #endif
                 _resume = true;
             }
