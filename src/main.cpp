@@ -1,12 +1,11 @@
 #include <Arduino.h>
-#include <HX711_ADC.h> // Load Cell AD
-#include <U8g2lib.h>   // Display
-#include <Wire.h>      // IIC for Display
+#include <HX711_ADC.h>   // Load Cell AD
+#include <U8g2lib.h>     // Display
+#include <Wire.h>        // IIC for Display
 #include <Preferences.h> // Preferences is the prefered method to read and write the Flash memory. The library EEPROM is outdated. https://randomnerdtutorials.com/esp32-save-data-permanently-preferences/
 
-
 // pins:
-#if defined(ESP32)
+// #if defined(ESP32)
 const int HX711_dout_1 = 16; // mcu > HX711 no 1 dout pin
 const int HX711_sck_1 = 17;  // mcu > HX711 no 1 sck pin
 const int HX711_dout_2 = 18; // mcu > HX711 no 2 dout pin
@@ -19,31 +18,6 @@ const int HX711_sck_3 = 22;  // mcu > HX711 no 3 sck pin
 // #define Jumper_1 34
 // #define Jumper_2 35
 // #define Jumper_3 32
-#endif
-// #if defined(ESP8266)
-// #define HX711_dout_1 D0 // mcu > HX711 no 1 dout pin
-// #define HX711_sck_1 D8  // mcu > HX711 no 1 sck pin
-// #define HX711_dout_2 D5 // mcu > HX711 no 2 dout pin
-// #define HX711_sck_2 D2  // mcu > HX711 no 2 sck pin
-// #define HX711_dout_3 D6 // mcu > HX711 no 3 dout pin
-// #define HX711_sck_3 D2  // mcu > HX711 no 3 sck pin
-// #define DisplayData D4
-// #define DisplayClk D3
-// #define Button_1 D7
-// #define Jumper_1
-// #define Jumper_2
-// #define Jumper_3
-// #define Jumper_3
-
-// D0 HX711_dout_1
-// D1
-// D2
-// D3 DisplayClk
-// D4 DisplayData
-// D5
-// D6
-// D7 Button_1
-// D8 HX711_sck_1
 // #endif
 
 // Display
@@ -58,9 +32,6 @@ HX711_ADC LoadCell_3(HX711_dout_3, HX711_sck_3); // HX711 3
 unsigned long lastUpdateMillis_1 = 0; // Software Debounce for buttons
 unsigned long lastUpdateMillis_2 = 0; // Delay for the load cells
 boolean isButtonPressed = false;
-// boolean availableLoadCell_1 = true; // check if the loadcells are plugged in
-// boolean availableLoadCell_2 = true;
-// boolean availableLoadCell_3 = true;
 float resultLoadCell_1;
 float resultLoadCell_2;
 float resultLoadCell_3;
@@ -103,18 +74,14 @@ void calibrate()
     } while (u8g2.nextPage());
     delay(2000);
 
-    float known_mass = 493;
+    float known_mass = 492;
     boolean _resume = false;
     float newCalibrationValue_1;
     float newCalibrationValue_2;
     float newCalibrationValue_3;
 
-// #if defined(ESP32)
     preferences.begin("Storage", false); // Open the Preferences Storage
-// #endif
 
-    // if (availableLoadCell_1)
-    // {
     _resume = false;
     while (_resume == false)
     {
@@ -147,12 +114,7 @@ void calibrate()
         u8g2.print("Naechste?");
     } while (u8g2.nextPage());
     delay(2000);
-    // }
-    // delay(2000);
-    // Serial.println(isButtonPressed);
 
-    // if (availableLoadCell_2)
-    // {
     _resume = false;
     while (_resume == false)
     {
@@ -185,10 +147,7 @@ void calibrate()
         u8g2.print("Naechste?");
     } while (u8g2.nextPage());
     delay(2000);
-    // }
 
-    // if (availableLoadCell_3)
-    // {
     _resume = false;
     while (_resume == false)
     {
@@ -219,11 +178,10 @@ void calibrate()
         u8g2.print("ist kalibriert");
     } while (u8g2.nextPage());
     delay(2000);
-    // }
 
-#if defined(ESP32)
+    // #if defined(ESP32)
     preferences.end(); // Close the storage
-#endif
+                       // #endif
 
     Serial.println("End calibration");
     u8g2.firstPage();
@@ -261,46 +219,6 @@ void setup()
     pinMode(Button_1, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(Button_1), interrupt_1, FALLING);
 
-    // Check the attached Load Cells
-    // pinMode(Jumper_1, INPUT_PULLUP);
-    // if (digitalRead(Jumper_1) == LOW){
-    //     availableLoadCell_1 = true;
-    // }
-    // pinMode(Jumper_2, INPUT_PULLUP);
-    // if (digitalRead(Jumper_2) == LOW){
-    //     availableLoadCell_2 = true;
-    // }
-    // pinMode(Jumper_3, INPUT_PULLUP);
-    // if (digitalRead(Jumper_3) == LOW){
-    //     availableLoadCell_3 = true;
-    // }
-
-    // Serial.print("LoadCell1: ");
-    // Serial.println(availableLoadCell_1);
-    // Serial.print("LoadCell2: ");
-    // Serial.println(availableLoadCell_2);
-    // Serial.print("LoadCell3: ");
-    // Serial.println(availableLoadCell_3);
-
-    // Display the connected Loadcells
-    // u8g2.firstPage();
-    // do
-    // {
-    //     u8g2.setFont(u8g2_font_ncenB12_tr);
-    //     u8g2.setCursor(0, 14);
-    //     u8g2.print("Waegezelle 1:");
-    //     u8g2.setCursor(0, 32);
-    //     u8g2.print("Waegezelle 2:");
-    //     u8g2.setCursor(0, 50);
-    //     u8g2.print("Waegezelle 3:");
-    //     u8g2.setCursor(120, 14);
-    //     u8g2.print(availableLoadCell_1);
-    //     u8g2.setCursor(120, 32);
-    //     u8g2.print(availableLoadCell_2);
-    //     u8g2.setCursor(120, 50);
-    //     u8g2.print(availableLoadCell_3);
-    // } while (u8g2.nextPage());
-
 // Load calibration values
 #if defined(ESP32)
     preferences.begin("Storage", false); // Open the storage
@@ -324,8 +242,6 @@ void setup()
     unsigned long stabilizingtime = 2000; // tare preciscion can be improved by adding a few seconds of stabilizing time
     boolean _tare = true;                 // set this to false if you don't want tare to be performed in the next step
 
-    // if (availableLoadCell_1)
-    // {
     LoadCell_1.begin();
     LoadCell_1.start(stabilizingtime, _tare);
     if (LoadCell_1.getTareTimeoutFlag() || LoadCell_1.getSignalTimeoutFlag())
@@ -334,10 +250,7 @@ void setup()
         // while (1);
     }
     LoadCell_1.setCalFactor(calibrationValue_1); // user set calibration value (float)
-    // LoadCell_1.setReverseOutput();
-    // }
-    // if (availableLoadCell_2)
-    // {
+
     LoadCell_2.begin();
     LoadCell_2.start(stabilizingtime, _tare);
     if (LoadCell_2.getTareTimeoutFlag() || LoadCell_2.getSignalTimeoutFlag())
@@ -346,10 +259,7 @@ void setup()
         // while (1);
     }
     LoadCell_2.setCalFactor(calibrationValue_2); // user set calibration value (float)
-    // LoadCell_2.setReverseOutput();
-    // }
-    // if (availableLoadCell_3)
-    // {
+
     LoadCell_3.begin();
     LoadCell_3.start(stabilizingtime, _tare);
     if (LoadCell_3.getTareTimeoutFlag() || LoadCell_3.getSignalTimeoutFlag())
@@ -391,52 +301,40 @@ void loop()
 {
 
     static boolean newDataReady = 0;
-    const int serialPrintInterval = 5000; // increase value to slow down serial print activity
+    const int serialPrintInterval = 1000; // increase value to slow down serial print activity
 
-    // if (availableLoadCell_1)
-    // {
     if (LoadCell_1.update())
     {
         newDataReady = true;
     }
-    // }
-    // if (availableLoadCell_2)
-    // {
+
     if (LoadCell_2.update())
     {
         newDataReady = true;
     }
-    // }
-    // if (availableLoadCell_3)
-    // {
+
     if (LoadCell_3.update())
     {
         newDataReady = true;
     }
-    // }
 
     if (newDataReady)
     {
         if (millis() > lastUpdateMillis_2 + serialPrintInterval)
         {
-            // if (availableLoadCell_1)
-            // {
+
             resultLoadCell_1 = LoadCell_1.getData();
             Serial.print("Load_cell 1: ");
             Serial.println(resultLoadCell_1);
-            // }
-            // if (availableLoadCell_2)
-            // {
+
             resultLoadCell_2 = LoadCell_2.getData();
             Serial.print("Load_cell 2: ");
             Serial.println(resultLoadCell_2);
-            // }
-            // if (availableLoadCell_3)
-            // {
+
             resultLoadCell_3 = LoadCell_3.getData();
             Serial.print("Load_cell 3: ");
             Serial.println(resultLoadCell_3);
-            // }
+
             sumLoadCell = resultLoadCell_1 + resultLoadCell_2 + resultLoadCell_3;
             Serial.print("Sum: ");
             Serial.println(sumLoadCell);
@@ -458,6 +356,7 @@ void loop()
     // Tare
     if (isButtonPressed && millis() - lastUpdateMillis_1 > 500)
     {
+        delay(500);
         isButtonPressed = false;
         lastUpdateMillis_1 = millis();
 
@@ -485,5 +384,5 @@ void loop()
     {
         Serial.println("Tare load cell 3 complete");
     }
+
 }
-// test1
