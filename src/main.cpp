@@ -2,10 +2,8 @@
 #include <HX711_ADC.h> // Load Cell AD
 #include <U8g2lib.h>   // Display
 #include <Wire.h>      // IIC for Display
-
-#if defined(ESP32)
 #include <Preferences.h> // Preferences is the prefered method to read and write the Flash memory. The library EEPROM is outdated. https://randomnerdtutorials.com/esp32-save-data-permanently-preferences/
-#endif
+
 
 // pins:
 #if defined(ESP32)
@@ -15,26 +13,28 @@ const int HX711_dout_2 = 18; // mcu > HX711 no 2 dout pin
 const int HX711_sck_2 = 23;  // mcu > HX711 no 2 sck pin
 const int HX711_dout_3 = 19; // mcu > HX711 no 3 dout pin
 const int HX711_sck_3 = 22;  // mcu > HX711 no 3 sck pin
-#define Button1 4
-// bei den folgenden Punkten bin ich mir nicht sicher.
-#define DisplayData 4
-#define DisplayClk 3
-#define Button_1 7
+#define DisplayData 12
+#define DisplayClk 14
+#define Button_1 25
+// #define Jumper_1 34
+// #define Jumper_2 35
+// #define Jumper_3 32
 #endif
-#if defined(ESP8266)
-#define HX711_dout_1 D0 // mcu > HX711 no 1 dout pin
-#define HX711_sck_1 D8  // mcu > HX711 no 1 sck pin
-#define HX711_dout_2 D5 // mcu > HX711 no 2 dout pin
-#define HX711_sck_2 D2  // mcu > HX711 no 2 sck pin
-#define HX711_dout_3 D6 // mcu > HX711 no 3 dout pin
-#define HX711_sck_3 D2  // mcu > HX711 no 3 sck pin
-#define DisplayData D4
-#define DisplayClk D3
-#define Button_1 D7
-#define Jumper_1
-#define Jumper_2
-#define Jumper_3
+// #if defined(ESP8266)
+// #define HX711_dout_1 D0 // mcu > HX711 no 1 dout pin
+// #define HX711_sck_1 D8  // mcu > HX711 no 1 sck pin
+// #define HX711_dout_2 D5 // mcu > HX711 no 2 dout pin
+// #define HX711_sck_2 D2  // mcu > HX711 no 2 sck pin
+// #define HX711_dout_3 D6 // mcu > HX711 no 3 dout pin
+// #define HX711_sck_3 D2  // mcu > HX711 no 3 sck pin
+// #define DisplayData D4
+// #define DisplayClk D3
+// #define Button_1 D7
+// #define Jumper_1
+// #define Jumper_2
 // #define Jumper_3
+// #define Jumper_3
+
 // D0 HX711_dout_1
 // D1
 // D2
@@ -44,7 +44,7 @@ const int HX711_sck_3 = 22;  // mcu > HX711 no 3 sck pin
 // D6
 // D7 Button_1
 // D8 HX711_sck_1
-#endif
+// #endif
 
 // Display
 U8G2_SH1107_64X128_1_SW_I2C u8g2(U8G2_R1, DisplayClk, DisplayData, U8X8_PIN_NONE);
@@ -58,9 +58,9 @@ HX711_ADC LoadCell_3(HX711_dout_3, HX711_sck_3); // HX711 3
 unsigned long lastUpdateMillis_1 = 0; // Software Debounce for buttons
 unsigned long lastUpdateMillis_2 = 0; // Delay for the load cells
 boolean isButtonPressed = false;
-boolean availableLoadCell_1 = true; // check if the loadcells are plugged in
-boolean availableLoadCell_2 = false;
-boolean availableLoadCell_3 = false;
+// boolean availableLoadCell_1 = true; // check if the loadcells are plugged in
+// boolean availableLoadCell_2 = true;
+// boolean availableLoadCell_3 = true;
 float resultLoadCell_1;
 float resultLoadCell_2;
 float resultLoadCell_3;
@@ -103,118 +103,123 @@ void calibrate()
     } while (u8g2.nextPage());
     delay(2000);
 
-    float known_mass = 1000;
+    float known_mass = 493;
     boolean _resume = false;
     float newCalibrationValue_1;
     float newCalibrationValue_2;
     float newCalibrationValue_3;
 
-#if defined(ESP32)
+// #if defined(ESP32)
     preferences.begin("Storage", false); // Open the Preferences Storage
-#endif
+// #endif
 
-    if (availableLoadCell_1)
+    // if (availableLoadCell_1)
+    // {
+    _resume = false;
+    while (_resume == false)
     {
-        _resume = false;
-        while (_resume == false)
+        if (isButtonPressed && millis() - lastUpdateMillis_1 > 500)
         {
-            if (isButtonPressed && millis() - lastUpdateMillis_1 > 500)
-            {
-                isButtonPressed = false;
-                lastUpdateMillis_1 = millis();
-                Serial.println("interrupt_1");
-                LoadCell_1.refreshDataSet();                                      // refresh the dataset to be sure that the known mass is measured correct
-                newCalibrationValue_1 = LoadCell_1.getNewCalibration(known_mass); // get the new calibration value
-                Serial.print("calibration value 1: ");
-                Serial.print(newCalibrationValue_1);
-#if defined(ESP32)
-                preferences.putFloat("calVal_1", newCalibrationValue_1);
-#endif
-                _resume = true;
-            }
-            yield(); // Required to avoid blocking by the while-Function.
+            delay(500);
+            isButtonPressed = false;
+            lastUpdateMillis_1 = millis();
+            Serial.println("interrupt_1");
+            LoadCell_1.refreshDataSet();                                      // refresh the dataset to be sure that the known mass is measured correct
+            newCalibrationValue_1 = LoadCell_1.getNewCalibration(known_mass); // get the new calibration value
+            Serial.print("calibration value 1: ");
+            Serial.println(newCalibrationValue_1);
+            preferences.putFloat("calVal_1", newCalibrationValue_1);
+            _resume = true;
+            Serial.print("isButtonPressed: ");
+            Serial.println(isButtonPressed);
         }
-        u8g2.firstPage();
-        do
-        {
-            u8g2.setFont(u8g2_font_ncenB10_tr);
-            u8g2.setCursor(0, 14);
-            u8g2.print("Waegezelle 1"); // "Load cell 1 is calibrated"
-            u8g2.setCursor(0, 32);
-            u8g2.print("ist kalibriert");
-            u8g2.setCursor(0, 50);
-            u8g2.print("Naechste?");
-        } while (u8g2.nextPage());
-        delay(2000);
+        yield(); // Required to avoid blocking by the while-Function.
     }
+    u8g2.firstPage();
+    do
+    {
+        u8g2.setFont(u8g2_font_ncenB10_tr);
+        u8g2.setCursor(0, 14);
+        u8g2.print("Waegezelle 1"); // "Load cell 1 is calibrated"
+        u8g2.setCursor(0, 32);
+        u8g2.print("ist kalibriert");
+        u8g2.setCursor(0, 50);
+        u8g2.print("Naechste?");
+    } while (u8g2.nextPage());
+    delay(2000);
+    // }
+    // delay(2000);
+    // Serial.println(isButtonPressed);
 
-    if (availableLoadCell_2)
+    // if (availableLoadCell_2)
+    // {
+    _resume = false;
+    while (_resume == false)
     {
-        _resume = false;
-        while (_resume == false)
+        if (isButtonPressed && millis() - lastUpdateMillis_1 > 2000)
         {
-            if (isButtonPressed && millis() - lastUpdateMillis_1 > 500)
-            {
-                isButtonPressed = false;
-                lastUpdateMillis_1 = millis();
-                Serial.println("interrupt_1");
-                LoadCell_2.refreshDataSet();                                      // refresh the dataset to be sure that the known mass is measured correct
-                newCalibrationValue_2 = LoadCell_2.getNewCalibration(known_mass); // get the new calibration value
-                Serial.print("calibration value 2: ");
-                Serial.print(newCalibrationValue_2);
-#if defined(ESP32)
-                preferences.putFloat("calVal_2", newCalibrationValue_2);
-#endif
-                _resume = true;
-            }
-            yield();
+            delay(500);
+            isButtonPressed = false;
+            lastUpdateMillis_1 = millis();
+            Serial.println("interrupt_1");
+            LoadCell_2.refreshDataSet();                                      // refresh the dataset to be sure that the known mass is measured correct
+            newCalibrationValue_2 = LoadCell_2.getNewCalibration(known_mass); // get the new calibration value
+            Serial.print("calibration value 2: ");
+            Serial.println(newCalibrationValue_2);
+            preferences.putFloat("calVal_2", newCalibrationValue_2);
+            _resume = true;
+            Serial.print("isButtonPressed: ");
+            Serial.println(isButtonPressed);
         }
-        u8g2.firstPage();
-        do
-        {
-            u8g2.setFont(u8g2_font_ncenB10_tr);
-            u8g2.setCursor(0, 14);
-            u8g2.print("Waegezelle 2"); // "Load cell 2 is calibrated"
-            u8g2.setCursor(0, 32);
-            u8g2.print("ist kalibriert");
-            u8g2.setCursor(0, 50);
-            u8g2.print("Naechste?");
-        } while (u8g2.nextPage());
-        delay(2000);
+        yield();
     }
+    u8g2.firstPage();
+    do
+    {
+        u8g2.setFont(u8g2_font_ncenB10_tr);
+        u8g2.setCursor(0, 14);
+        u8g2.print("Waegezelle 2"); // "Load cell 2 is calibrated"
+        u8g2.setCursor(0, 32);
+        u8g2.print("ist kalibriert");
+        u8g2.setCursor(0, 50);
+        u8g2.print("Naechste?");
+    } while (u8g2.nextPage());
+    delay(2000);
+    // }
 
-    if (availableLoadCell_3)
+    // if (availableLoadCell_3)
+    // {
+    _resume = false;
+    while (_resume == false)
     {
-        _resume = false;
-        while (_resume == false)
+        if (isButtonPressed && millis() - lastUpdateMillis_1 > 2000)
         {
-            if (isButtonPressed && millis() - lastUpdateMillis_1 > 500)
-            {
-                isButtonPressed = false;
-                lastUpdateMillis_1 = millis();
-                Serial.println("interrupt_1");
-                LoadCell_3.refreshDataSet();                                      // refresh the dataset to be sure that the known mass is measured correct
-                newCalibrationValue_3 = LoadCell_3.getNewCalibration(known_mass); // get the new calibration value
-                Serial.print("calibration value: ");
-                Serial.print(newCalibrationValue_3);
-#if defined(ESP32)
-                preferences.putFloat("calVal_3", newCalibrationValue_3);
-#endif
-                _resume = true;
-            }
-            yield();
+            delay(500);
+            isButtonPressed = false;
+            lastUpdateMillis_1 = millis();
+            Serial.println("interrupt_1");
+            LoadCell_3.refreshDataSet();                                      // refresh the dataset to be sure that the known mass is measured correct
+            newCalibrationValue_3 = LoadCell_3.getNewCalibration(known_mass); // get the new calibration value
+            Serial.println("calibration value: ");
+            Serial.print(newCalibrationValue_3);
+            preferences.putFloat("calVal_3", newCalibrationValue_3);
+            _resume = true;
+            Serial.print("isButtonPressed: ");
+            Serial.println(isButtonPressed);
         }
-        u8g2.firstPage();
-        do
-        {
-            u8g2.setFont(u8g2_font_ncenB10_tr);
-            u8g2.setCursor(0, 14);
-            u8g2.print("Waegezelle 3"); // "Load cell 3 is calibrated"
-            u8g2.setCursor(0, 32);
-            u8g2.print("ist kalibriert");
-        } while (u8g2.nextPage());
-        delay(2000);
+        yield();
     }
+    u8g2.firstPage();
+    do
+    {
+        u8g2.setFont(u8g2_font_ncenB10_tr);
+        u8g2.setCursor(0, 14);
+        u8g2.print("Waegezelle 3"); // "Load cell 3 is calibrated"
+        u8g2.setCursor(0, 32);
+        u8g2.print("ist kalibriert");
+    } while (u8g2.nextPage());
+    delay(2000);
+    // }
 
 #if defined(ESP32)
     preferences.end(); // Close the storage
@@ -270,31 +275,31 @@ void setup()
     //     availableLoadCell_3 = true;
     // }
 
-    Serial.print("LoadCell1: ");
-    Serial.println(availableLoadCell_1);
-    Serial.print("LoadCell2: ");
-    Serial.println(availableLoadCell_2);
-    Serial.print("LoadCell3: ");
-    Serial.println(availableLoadCell_3);
+    // Serial.print("LoadCell1: ");
+    // Serial.println(availableLoadCell_1);
+    // Serial.print("LoadCell2: ");
+    // Serial.println(availableLoadCell_2);
+    // Serial.print("LoadCell3: ");
+    // Serial.println(availableLoadCell_3);
 
     // Display the connected Loadcells
-    u8g2.firstPage();
-    do
-    {
-        u8g2.setFont(u8g2_font_ncenB12_tr);
-        u8g2.setCursor(0, 14);
-        u8g2.print("Waegezelle 1:");
-        u8g2.setCursor(0, 32);
-        u8g2.print("Waegezelle 2:");
-        u8g2.setCursor(0, 50);
-        u8g2.print("Waegezelle 3:");
-        u8g2.setCursor(120, 14);
-        u8g2.print(availableLoadCell_1);
-        u8g2.setCursor(120, 32);
-        u8g2.print(availableLoadCell_2);
-        u8g2.setCursor(120, 50);
-        u8g2.print(availableLoadCell_3);
-    } while (u8g2.nextPage());
+    // u8g2.firstPage();
+    // do
+    // {
+    //     u8g2.setFont(u8g2_font_ncenB12_tr);
+    //     u8g2.setCursor(0, 14);
+    //     u8g2.print("Waegezelle 1:");
+    //     u8g2.setCursor(0, 32);
+    //     u8g2.print("Waegezelle 2:");
+    //     u8g2.setCursor(0, 50);
+    //     u8g2.print("Waegezelle 3:");
+    //     u8g2.setCursor(120, 14);
+    //     u8g2.print(availableLoadCell_1);
+    //     u8g2.setCursor(120, 32);
+    //     u8g2.print(availableLoadCell_2);
+    //     u8g2.setCursor(120, 50);
+    //     u8g2.print(availableLoadCell_3);
+    // } while (u8g2.nextPage());
 
 // Load calibration values
 #if defined(ESP32)
@@ -319,42 +324,42 @@ void setup()
     unsigned long stabilizingtime = 2000; // tare preciscion can be improved by adding a few seconds of stabilizing time
     boolean _tare = true;                 // set this to false if you don't want tare to be performed in the next step
 
-    if (availableLoadCell_1)
+    // if (availableLoadCell_1)
+    // {
+    LoadCell_1.begin();
+    LoadCell_1.start(stabilizingtime, _tare);
+    if (LoadCell_1.getTareTimeoutFlag() || LoadCell_1.getSignalTimeoutFlag())
     {
-        LoadCell_1.begin();
-        LoadCell_1.start(stabilizingtime, _tare);
-        if (LoadCell_1.getTareTimeoutFlag() || LoadCell_1.getSignalTimeoutFlag())
-        {
-            Serial.println("Timeout, check MCU>HX711 wiring and pin designations");
-            // while (1);
-        }
-        LoadCell_1.setCalFactor(calibrationValue_1); // user set calibration value (float)
-        // LoadCell_1.setReverseOutput();
+        Serial.println("Timeout, check MCU>HX711 wiring and pin designations");
+        // while (1);
     }
-    if (availableLoadCell_2)
+    LoadCell_1.setCalFactor(calibrationValue_1); // user set calibration value (float)
+    // LoadCell_1.setReverseOutput();
+    // }
+    // if (availableLoadCell_2)
+    // {
+    LoadCell_2.begin();
+    LoadCell_2.start(stabilizingtime, _tare);
+    if (LoadCell_2.getTareTimeoutFlag() || LoadCell_2.getSignalTimeoutFlag())
     {
-        LoadCell_2.begin();
-        LoadCell_2.start(stabilizingtime, _tare);
-        if (LoadCell_2.getTareTimeoutFlag() || LoadCell_2.getSignalTimeoutFlag())
-        {
-            Serial.println("Timeout, check MCU>HX711 wiring and pin designations");
-            // while (1);
-        }
-        LoadCell_2.setCalFactor(calibrationValue_2); // user set calibration value (float)
-        // LoadCell_2.setReverseOutput();
+        Serial.println("Timeout, check MCU>HX711 wiring and pin designations");
+        // while (1);
     }
-    if (availableLoadCell_3)
+    LoadCell_2.setCalFactor(calibrationValue_2); // user set calibration value (float)
+    // LoadCell_2.setReverseOutput();
+    // }
+    // if (availableLoadCell_3)
+    // {
+    LoadCell_3.begin();
+    LoadCell_3.start(stabilizingtime, _tare);
+    if (LoadCell_3.getTareTimeoutFlag() || LoadCell_3.getSignalTimeoutFlag())
     {
-        LoadCell_3.begin();
-        LoadCell_3.start(stabilizingtime, _tare);
-        if (LoadCell_3.getTareTimeoutFlag() || LoadCell_3.getSignalTimeoutFlag())
-        {
-            Serial.println("Timeout, check MCU>HX711 wiring and pin designations");
-            // while (1);
-        }
-        LoadCell_3.setCalFactor(calibrationValue_3); // user set calibration value (float)
-        // LoadCell_3.setReverseOutput();
+        Serial.println("Timeout, check MCU>HX711 wiring and pin designations");
+        // while (1);
     }
+    LoadCell_3.setCalFactor(calibrationValue_3); // user set calibration value (float)
+    // LoadCell_3.setReverseOutput();
+    // }
 
     delay(1000); // Enough time for the last Display, which shows the connected load cells
     Serial.println("Startup is complete");
@@ -386,52 +391,52 @@ void loop()
 {
 
     static boolean newDataReady = 0;
-    const int serialPrintInterval = 1000; // increase value to slow down serial print activity
+    const int serialPrintInterval = 5000; // increase value to slow down serial print activity
 
-    if (availableLoadCell_1)
+    // if (availableLoadCell_1)
+    // {
+    if (LoadCell_1.update())
     {
-        if (LoadCell_1.update())
-        {
-            newDataReady = true;
-        }
+        newDataReady = true;
     }
-    if (availableLoadCell_2)
+    // }
+    // if (availableLoadCell_2)
+    // {
+    if (LoadCell_2.update())
     {
-        if (LoadCell_2.update())
-        {
-            newDataReady = true;
-        }
+        newDataReady = true;
     }
-    if (availableLoadCell_3)
+    // }
+    // if (availableLoadCell_3)
+    // {
+    if (LoadCell_3.update())
     {
-        if (LoadCell_3.update())
-        {
-            newDataReady = true;
-        }
+        newDataReady = true;
     }
+    // }
 
     if (newDataReady)
     {
         if (millis() > lastUpdateMillis_2 + serialPrintInterval)
         {
-            if (availableLoadCell_1)
-            {
-                resultLoadCell_1 = LoadCell_1.getData();
-                Serial.print("Load_cell 1: ");
-                Serial.println(resultLoadCell_1);
-            }
-            if (availableLoadCell_2)
-            {
-                resultLoadCell_2 = LoadCell_2.getData();
-                Serial.print("Load_cell 2: ");
-                Serial.println(resultLoadCell_2);
-            }
-            if (availableLoadCell_3)
-            {
-                resultLoadCell_3 = LoadCell_3.getData();
-                Serial.print("Load_cell 3: ");
-                Serial.println(resultLoadCell_3);
-            }
+            // if (availableLoadCell_1)
+            // {
+            resultLoadCell_1 = LoadCell_1.getData();
+            Serial.print("Load_cell 1: ");
+            Serial.println(resultLoadCell_1);
+            // }
+            // if (availableLoadCell_2)
+            // {
+            resultLoadCell_2 = LoadCell_2.getData();
+            Serial.print("Load_cell 2: ");
+            Serial.println(resultLoadCell_2);
+            // }
+            // if (availableLoadCell_3)
+            // {
+            resultLoadCell_3 = LoadCell_3.getData();
+            Serial.print("Load_cell 3: ");
+            Serial.println(resultLoadCell_3);
+            // }
             sumLoadCell = resultLoadCell_1 + resultLoadCell_2 + resultLoadCell_3;
             Serial.print("Sum: ");
             Serial.println(sumLoadCell);
